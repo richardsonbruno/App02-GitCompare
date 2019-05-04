@@ -11,6 +11,7 @@ export const Repository = styled.div`
   width: 240px;
   background: #fff;
   border-radius: 3px;
+  overflow: hidden;
   margin: 0 10px;
 
   display: flex;
@@ -53,6 +54,32 @@ export const Repository = styled.div`
 
       &:nth-child(2n-1) {
         background: #f5f5f5;
+      }
+    }
+  }
+
+  footer {
+    background: #7b39d8;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 10px;
+
+    button {
+      background: none;
+      border: none;
+      color: #fff;
+      padding: 15px;
+      font-size: 14px;
+      flex: 1;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 0.5;
       }
     }
   }

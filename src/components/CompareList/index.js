@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 
 import { Container, Repository } from './styles';
 
-const CompareList = ({ repos }) => (
+const CompareList = ({
+  repos, handleRemove, handleUpdate, updatedIcon,
+}) => (
   <Container>
     {repos.map(repository => (
       <Repository key={repository.id}>
@@ -28,6 +30,20 @@ const CompareList = ({ repos }) => (
             {repository.lastCommit} <small>last commit</small>
           </li>
         </ul>
+
+        <footer>
+          <button onClick={() => handleRemove(repository.id)}>
+            <i className="fa fa-remove" />
+          </button>
+
+          <button onClick={() => handleUpdate(repository.id)}>
+            {updatedIcon ? (
+              <i className="fa fa-refresh fa-pulse" />
+            ) : (
+              <i className="fa fa-refresh" />
+            )}
+          </button>
+        </footer>
       </Repository>
     ))}
   </Container>

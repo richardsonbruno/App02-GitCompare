@@ -15,7 +15,13 @@ export default class Main extends Component {
       repositoryError: false,
       reposityInput: '',
       repositories: [],
+      updated: false,
     };
+  }
+
+  async componentDidMount() {
+    this.setState({ loading: true });
+    this.setState({ loading: false, repositories: await this.getLocalRepositories() });
   }
 
   handleAddRepository = async (e) => {
@@ -27,6 +33,7 @@ export default class Main extends Component {
 
     try {
       const { data: repository } = await api.get(`/repos/${reposityInput}`);
+
       repository.lastCommit = moment(repository.pushed_at).fromNow();
 
       this.setState({
@@ -34,6 +41,13 @@ export default class Main extends Component {
         repositories: [...repositories, repository],
         repositoryError: false,
       });
+
+      const localRepository = await this.getLocalRepositories();
+
+      await localStorage.setItem(
+        '@GitCompare:repositories',
+        JSON.stringify([...localRepository, repository]),
+      );
     } catch (err) {
       this.setState({ repositoryError: true });
     } finally {
@@ -41,9 +55,47 @@ export default class Main extends Component {
     }
   };
 
+  getLocalRepositories = async () => JSON.parse(await localStorage.getItem('@GitCompare:repositories')) || [];
+
+  handleRemoveRepository = async (id) => {
+    const { repositories } = this.state;
+
+    const updatedRepositories = repositories.filter(repository => repository.id !== id);
+
+    this.setState({ repositories: updatedRepositories });
+
+    await localStorage.setItem('@GitCompare:repositories', JSON.stringify(updatedRepositories));
+  };
+
+  handleUpdateRepository = async (id) => {
+    const { repositories } = this.state;
+
+    this.setState({ updated: true });
+
+    const repository = repositories.find(repo => repo.id === id);
+
+    try {
+      const { data } = await api.get(`/repos/${repository.full_name}`);
+
+      data.lastCommit = moment(data.pushed_at).fromNow();
+
+      this.setState({
+        repositoryError: false,
+        reposityInput: '',
+        repositories: repositories.map(repo => (repo.id === data.id ? data : repo)),
+      });
+
+      await localStorage.setItem('@GitCompare:repositories', JSON.stringify(repositories));
+    } catch (err) {
+      this.setState({ repositoryError: true });
+    } finally {
+      this.setState({ updated: false });
+    }
+  };
+
   render() {
     const {
-      reposityInput, repositories, repositoryError, loading,
+      reposityInput, repositories, repositoryError, loading, updated,
     } = this.state;
 
     return (
@@ -60,7 +112,12 @@ export default class Main extends Component {
           <button type="submit">{loading ? <i className="fa fa-spinner fa-pulse" /> : 'OK'}</button>
         </Form>
 
-        <CompareList repos={repositories} />
+        <CompareList
+          repos={repositories}
+          handleRemove={this.handleRemoveRepository}
+          updatedIcon={updated}
+          handleUpdate={this.handleUpdateRepository}
+        />
       </Container>
     );
   }
