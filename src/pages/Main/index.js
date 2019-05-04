@@ -70,9 +70,9 @@ export default class Main extends Component {
   handleUpdateRepository = async (id) => {
     const { repositories } = this.state;
 
-    this.setState({ updated: true });
-
     const repository = repositories.find(repo => repo.id === id);
+
+    document.getElementById(id).classList.add('fa-pulse');
 
     try {
       const { data } = await api.get(`/repos/${repository.full_name}`);
@@ -89,7 +89,7 @@ export default class Main extends Component {
     } catch (err) {
       this.setState({ repositoryError: true });
     } finally {
-      this.setState({ updated: false });
+      document.getElementById(id).classList.remove('fa-pulse');
     }
   };
 
